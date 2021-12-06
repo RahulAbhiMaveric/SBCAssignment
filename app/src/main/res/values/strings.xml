@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">MovieApp</string>
+    <string name="search_title">enter movie title</string>
+    <string name="movieitem">movieItem</string>
+    <string name="genretitle">Title</string>
+    <string name="release_date">Release Date</string>
+    <string name="rating">Rating</string>
+    <string name="synopsis">Synopsis :</string>
+    <string name="director">Director:</string>
+    <string name="writer">Writer:</string>
+    <string name="actors">Actors:</string>
 </resources>
