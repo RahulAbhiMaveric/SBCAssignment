@@ -30,6 +30,9 @@ class MovieListActivity : AppCompatActivity(), OnMovieItemClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_list)
+        title = "Marvel"
+        actionBar?.setHomeButtonEnabled(true)
+        actionBar?.setDisplayHomeAsUpEnabled(true)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         binding.progressBar.visibility = View.VISIBLE

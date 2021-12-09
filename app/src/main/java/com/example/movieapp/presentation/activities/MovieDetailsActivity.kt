@@ -25,6 +25,8 @@ class MovieDetailsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_movie_details)
+        actionBar?.setHomeButtonEnabled(true)
+        actionBar?.setDisplayHomeAsUpEnabled(true)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         val imdbId = intent?.getStringExtra(IMDB_ID)
@@ -45,7 +47,11 @@ class MovieDetailsActivity : AppCompatActivity() {
                 }
                 is DataState.Success -> {
                     viewModel.setLoading(false)
-                    data.data?.let { viewModel.setMovieDetails(it) }
+                    data.data?.let {
+                        viewModel.setMovieDetails(it)
+                        title = it.title
+                    }
+
                 }
                 is DataState.Error -> {
                     viewModel.setLoading(false)

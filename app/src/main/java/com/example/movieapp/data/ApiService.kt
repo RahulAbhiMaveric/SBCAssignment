@@ -27,4 +27,8 @@ interface ApiService {
      */
     @GET(".")
     suspend fun getMovieDetails(@Query("i") id: String): Response<MovieDetails>
+    /**
+     * pagination url example
+     * http://www.omdbapi.com/?apikey=b9bd48a6&s=Batman&movie=marvel&page=2
+     */
 }

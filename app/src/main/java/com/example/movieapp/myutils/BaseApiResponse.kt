@@ -8,7 +8,7 @@ import retrofit2.Response
  */
 abstract class BaseApiResponse {
     /**
-     * @param takes suspend lamda function and @return
+     * @param takes suspend lamda function and of generic response type and @return
      * generic DataState class
      */
     suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): DataState<T> {
