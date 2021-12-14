@@ -59,7 +59,7 @@ class MovieListActivity : AppCompatActivity(), OnMovieItemClickListener {
                 is DataState.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
                 }
-                is DataState.Success<MovieList?> -> {
+                is DataState.Success -> {
                     binding.progressBar.visibility = View.GONE
                     val result = dataState.data
                     binding.movieListRecyclerView.layoutManager = GridLayoutManager(this, 2)
@@ -74,6 +74,8 @@ class MovieListActivity : AppCompatActivity(), OnMovieItemClickListener {
                         binding.movieListRecyclerView.adapter = adapter
                     }
                     Timber.d("movie list=$result")
+                } is DataState.Error ->{
+
                 }
                 else -> {
                     binding.progressBar.visibility = View.GONE

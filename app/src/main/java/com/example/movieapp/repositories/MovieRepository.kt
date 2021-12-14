@@ -10,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityRetainedComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
@@ -42,6 +43,8 @@ class MovieRepository @Inject constructor(private val apiService: ApiService) : 
         return flow {
             emit(DataState.Loading)
             emit(safeApiCall { apiService.getMovieDetails(id) })
-        }.flowOn(Dispatchers.IO)
+        }.catch { emit(DataState.Error(Exception("Network error"))) }
+            .flowOn(Dispatchers.IO)
+
     }
 }

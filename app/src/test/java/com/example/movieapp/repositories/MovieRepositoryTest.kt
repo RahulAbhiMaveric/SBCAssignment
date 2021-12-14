@@ -1,67 +1,79 @@
 package com.example.movieapp.repositories
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.movieapp.data.ApiService
-import com.example.movieapp.di.module.TokenInterceptorModule
+import com.example.movieapp.models.MovieDetails
 import com.example.movieapp.models.MovieList
 import com.example.movieapp.myutils.DataState
-import com.example.movieapp.myutils.MyConstant.Companion.BASE_URL
 import junit.framework.TestCase
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import retrofit2.Response
 
 @RunWith(JUnit4::class)
 class MovieRepositoryTest {
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
-    private lateinit var repository: MovieRepository
-    private val mockRepo=Mockito.mock(MovieRepository::class.java)
-    private val server = MockWebServer()
-    private  lateinit var movieList : MovieList
+    private lateinit var movieList: MovieList
+    private lateinit var movieDetails: MovieDetails
+    private lateinit var mockRepo: MovieRepository
+    private lateinit var apiService: ApiService
+
     @Before
     fun init() {
-        movieList=MovieList()
-        movieList=Mockito.mock(MovieList::class.java)
-        server.start(8000)
-        //val baseUrl = server.url("/").toString()
-        val okHttpClient = OkHttpClient
-            .Builder()
-            .addInterceptor(TokenInterceptorModule())
-            .build()
-        val service = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okHttpClient)
-            .build().create(ApiService::class.java)
-        repository = MovieRepository(service)
+        apiService = mock<ApiService>()
+        mockRepo = MovieRepository(apiService)
+        movieList = mock<MovieList>()
+        movieDetails = mock<MovieDetails>()
     }
 
     @Test
-    fun testGetMovie() {
-        server.enqueue(
-            MockResponse()
-        )
-        Mockito.`when`(runBlocking { mockRepo.getMovie("marvel", "movie") }).thenReturn(DataState.Success(movieList))
-        val response = runBlocking { mockRepo.getMovie("marvel", "movie") }
-
-        Assert.assertNotNull(response)
-        TestCase.assertEquals(response, DataState.Success(movieList))
+    fun testGetMovie() = runBlocking {
+        val mockRepo = mock<MovieRepository> {
+            onBlocking {
+                getMovie(any(), any())
+            } doReturn DataState.Success(movieList)
+        }
+        val response = mockRepo.getMovie("marvel", "movie")
+        assert(response is DataState.Success)
     }
 
     @Test
-    fun testGetMovieDetailsFlow() {
+    fun testGetMovieFail() = runBlocking {
+
+        val mockRepo = mock<MovieRepository> {
+            onBlocking {
+                getMovie(any(), any())
+            } doReturn DataState.Error(Exception(""))
+        }
+        val response = mockRepo.getMovie("marvel", "movie")
+        assert(response is DataState.Error)
     }
 
-    @After
-    fun tearDown() {
-        server.shutdown()
+    @Test
+    fun testGetMovieDetailsFlow() = runBlocking {
+        Mockito.`when`(apiService.getMovieDetails(any())).thenReturn(Response.success(movieDetails))
+        val firstItem = mockRepo.getMovieDetailsFlow("tt4154664").first()
+        val secondItem = mockRepo.getMovieDetailsFlow("tt4154664").drop(1).first()
+        TestCase.assertTrue(firstItem is DataState.Loading)
+        TestCase.assertTrue(secondItem is DataState.Success)
     }
+
+    @Test
+    fun testGetMovieDetailsFlowError() = runBlocking {
+        Mockito.`when`(apiService.getMovieDetails(any()))
+            .thenThrow(ArrayIndexOutOfBoundsException("error"))
+        val firstItem = mockRepo.getMovieDetailsFlow("tt4154664").first()
+        val secondItem = mockRepo.getMovieDetailsFlow("tt4154664").drop(1).first()
+        TestCase.assertTrue(firstItem is DataState.Loading)
+        TestCase.assertTrue(secondItem is DataState.Error)
+    }
+
 }
