@@ -27,12 +27,18 @@ class MovieRepository @Inject constructor(private val apiService: ApiService) : 
      */
     suspend fun getMovie(s: String, type: String) = withContext(Dispatchers.IO) {
         DataState.Loading
-        val result = apiService.getMovieList(s, type)
-        if (result.isSuccessful) {
-            DataState.Success(result.body())
-        } else {
-            DataState.Error(Exception(result.message()))
+
+        try {
+            val result = apiService.getMovieList(s, type)
+            if (result.isSuccessful) {
+                DataState.Success(result.body())
+            } else {
+                DataState.Error(Exception(result.message()))
+            }
+        }catch (e:Exception){
+            DataState.Error(Exception(e.message))
         }
+
     }
 
     /**
